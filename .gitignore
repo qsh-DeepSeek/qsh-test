@@ -147,3 +147,9 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# dsh-openwolf 的本地运行状态（token 账本、会话状态），属于个人使用痕迹
+.dshwolf/
+
+# 人设卡插件的依赖软链（指向 DSH 安装目录，换环境按 dsh-persona-cards/NOTES.md 重建）
+dsh-persona-cards/node_modules/
