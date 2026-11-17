@@ -171,13 +171,45 @@ plugin_manager remove_bundle  →  plugin_manager install_bundle
 三张卡都只挂基础工具（文件读写/搜索/网页/待办/目标/问答），
 **没挂**终端、子代理、手机控制。
 
-## 加一张新卡
+## 加一张新卡（别手抄）
 
-复制 `cordis.patch.yml` 里任意一个 `- id: preset-persona-xxx` 块，改：
+手抄卡片最容易漏**工具行的必填 config**（漏了预设直接 broken）和**行 id 的命名约定**。
+用脚本生成：
 
-1. Loader 行 id：`preset-persona-<新id>`（全局唯一）
-2. `config.id`：`persona-<新id>`（小写字母/数字/连字符）
-3. `config.name` / `description` / `order`
-4. 卡里 `persona-card` 行的 `name` / `prefix` / `suffix`
+```bash
+node scripts/new-card.mjs \
+  --id acai \
+  --name "人设卡 · 阿彩" \
+  --desc "一句话介绍" \
+  --prefix-file my-prefix.txt \
+  --order 23
+```
 
-然后 remove + install，按上面的方法验证 `broken` 为空。
+| 参数 | 说明 |
+|---|---|
+| `--id` | 小写字母/数字/连字符，**别带** `persona-` 前缀（脚本会加） |
+| `--name` / `--desc` | 显示名与一句话介绍 |
+| `--prefix-file` | 人设正文文件；不给则从 stdin 读 |
+| `--suffix-file` | 可选，写「别忘了你是谁」这类收尾 |
+| `--order` | 列表排序，默认 23 |
+| `--no-goal` | 不给 `goal` 工具时用 |
+
+脚本**只输出到 stdout**，不直接改文件：先看一眼，确认无误再贴进 `cordis.patch.yml`，
+然后 remove + install，最后用 `agentPresets/list` 确认 `broken` 为空。
+
+脚本内置了必填 config，所以不会重演坑二。**不要绕过它手写工具行。**
+
+## 改完 YAML 之后
+
+1. 先做静态自检：YAML 能解析、三张卡的 `tool-fs-search` 有 `sampleOverCapGlobResults`、
+   `tool-todo` 有 `allowParallelInProgress`（用任意 YAML 库 parse 一遍就行）；
+2. **静态通过不算数**，必须 remove + install 后调 `agentPresets/list` 看 `broken`；
+3. 如果 remove 那步返回 `application: "restart-required"`（原因常见是 `unmanaged-plugin`），
+   说明运行中的进程可能没吃到新配置——此时 `list` 看出来的状态可能是旧的，
+   需要重启 DSH 才能确定。**别把 restart-required 当成成功。**
+
+## 本地验证小工具
+
+`scripts/new-card.mjs` 之外，验证逻辑本身没做成脚本（要签 cookie、走 RPC，环境相关性强），
+但核心就三步：`agentPresets/list` 看 `broken` → `agentPresets/select` → `session/list` 看投影。
+细节和参数名坑见上面「怎么验证」。

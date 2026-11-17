@@ -17,7 +17,9 @@
     "cordis.patch.yml",
     "locale/*.json",
     "icon.svg",
-    "README.md"
+    "README.md",
+    "NOTES.md",
+    "scripts/*.mjs"
   ],
   "icon": "icon.svg",
   "peerDependencies": {
@@ -31,5 +33,8 @@
     "bundle": {
       "patch": "./cordis.patch.yml"
     }
+  },
+  "scripts": {
+    "new-card": "node scripts/new-card.mjs"
   }
 }
